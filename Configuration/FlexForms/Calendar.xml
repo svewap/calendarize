@@ -19,6 +19,7 @@
 							<onChange>reload</onChange>
 							<config>
 								<type>select</type>
+								<renderType>selectSingle</renderType>
 								<items>
 									<numIndex index="0">
 										<numIndex index="0">LLL:EXT:calendarize/Resources/Private/Language/locallang.xlf:mode.normal</numIndex>
@@ -265,6 +266,7 @@
 							<label>LLL:EXT:calendarize/Resources/Private/Language/locallang.xlf:configuration</label>
 							<config>
 								<type>select</type>
+								<renderType>selectSingle</renderType>
 								<itemsProcFunc>HDNET\Calendarize\Service\PluginConfigurationService->addConfig</itemsProcFunc>
 								<renderMode>checkbox</renderMode>
 								<minitems>1</minitems>
@@ -279,6 +281,7 @@
 							<label>LLL:EXT:calendarize/Resources/Private/Language/locallang.xlf:sortBy</label>
 							<config>
 								<type>select</type>
+								<renderType>selectSingle</renderType>
 								<items>
 									<numIndex index="0">
 										<numIndex index="0">LLL:EXT:calendarize/Resources/Private/Language/locallang.xlf:tx_calendarize_domain_model_configuration.start_date</numIndex>
@@ -303,6 +306,7 @@
 							<label>LLL:EXT:calendarize/Resources/Private/Language/locallang.xlf:sorting</label>
 							<config>
 								<type>select</type>
+								<renderType>selectSingle</renderType>
 								<items>
 									<numIndex index="0">
 										<numIndex index="0">ASC</numIndex>
@@ -338,6 +342,7 @@
 							<label>LLL:EXT:calendarize/Resources/Private/Language/locallang.xlf:recursive</label>
 							<config>
 								<type>select</type>
+								<renderType>selectSingle</renderType>
 								<items type="array">
 									<numIndex index="1" type="array">
 										<numIndex index="0">LLL:EXT:calendarize/Resources/Private/Language/locallang.xlf:inherit</numIndex>
