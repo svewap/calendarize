@@ -14,6 +14,7 @@ use HDNET\Calendarize\Property\TypeConverter\AbstractBookingRequest;
 use HDNET\Calendarize\Service\PluginConfigurationService;
 use HDNET\Calendarize\Utility\DateTimeUtility;
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Core\Http\ImmediateResponseException;
 use TYPO3\CMS\Core\Http\PropagateResponseException;
 use TYPO3\CMS\Core\Type\ContextualFeedbackSeverity;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -313,12 +314,23 @@ abstract class AbstractController extends ActionController
         return $prev > $dateTime || $next < $dateTime;
     }
 
+    public function renderErrorMessage(?string $message = null, ?string $title = null): ResponseInterface
+    {
+        $this->view->assignMultiple([
+            'settings' => $this->settings,
+            'title' => $title,
+            'message' => $message,
+        ]);
+        return $this->htmlResponse($this->view->render('ErrorMessage'));
+    }
+
     protected function return404Page(): ResponseInterface
     {
-        return GeneralUtility::makeInstance(ErrorController::class)->pageNotFoundAction(
+        $response = GeneralUtility::makeInstance(ErrorController::class)->pageNotFoundAction(
             $this->request,
-            'The requested page does not exist',
+            'No calendar entry found!',
             ['code' => PageAccessFailureReasons::PAGE_NOT_FOUND],
         );
+        throw new ImmediateResponseException($response, 1752231446);
     }
 }

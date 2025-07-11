@@ -396,7 +396,9 @@ class CalendarController extends AbstractController
         }
 
         if ($this->isDateOutOfTypoScriptConfiguration($date)) {
-            return $this->return404Page();
+            return $this->renderErrorMessage(
+                message: 'Date is out of TypoScript Settings.',
+            );
         }
 
         $indices = $this->indexRepository->findMonth((int)$date->format('Y'), (int)$date->format('n'));
