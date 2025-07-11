@@ -50,7 +50,7 @@ class CalendarController extends AbstractController
                 ->setTypeConverterOption(
                     DateTimeConverter::class,
                     DateTimeConverter::CONFIGURATION_DATE_FORMAT,
-                    'Y-m-d'
+                    'Y-m-d',
                 );
         }
         if (isset($this->arguments['endDate'])) {
@@ -58,7 +58,7 @@ class CalendarController extends AbstractController
                 ->setTypeConverterOption(
                     DateTimeConverter::class,
                     DateTimeConverter::CONFIGURATION_DATE_FORMAT,
-                    'Y-m-d'
+                    'Y-m-d',
                 );
         }
 
@@ -68,7 +68,7 @@ class CalendarController extends AbstractController
     protected function modifyIndexRepository(): void
     {
         $this->indexRepository->setIndexTypes(
-            GeneralUtility::trimExplode(',', $this->settings['configuration'] ?? '', true)
+            GeneralUtility::trimExplode(',', $this->settings['configuration'] ?? '', true),
         );
         $additionalSlotArguments = [
             'contentRecord' => $this->request->getAttribute('currentContentObject')->data,
@@ -80,7 +80,7 @@ class CalendarController extends AbstractController
             if (isset($this->settings['sortBy'])) {
                 $this->indexRepository->setDefaultSortingDirection(
                     $this->settings['sorting'],
-                    $this->settings['sortBy']
+                    $this->settings['sortBy'],
                 );
             } else {
                 $this->indexRepository->setDefaultSortingDirection($this->settings['sorting']);
@@ -125,7 +125,7 @@ class CalendarController extends AbstractController
         array $customSearch = [],
         int $year = 0,
         int $month = 0,
-        int $week = 0
+        int $week = 0,
     ): ResponseInterface {
         $this->checkStaticTemplateIsIncluded();
         if (($index instanceof Index) && \in_array('detail', $this->getAllowedActions(), true)) {
@@ -166,7 +166,7 @@ class CalendarController extends AbstractController
         array $customSearch = [],
         int $year = 0,
         int $month = 0,
-        int $week = 0
+        int $week = 0,
     ): ResponseInterface {
         $this->checkStaticTemplateIsIncluded();
         if (($index instanceof Index) && \in_array('detail', $this->getAllowedActions(), true)) {
@@ -208,7 +208,7 @@ class CalendarController extends AbstractController
         int $year = 0,
         int $month = 0,
         int $day = 0,
-        int $week = 0
+        int $week = 0,
     ): ResponseInterface {
         $this->checkStaticTemplateIsIncluded();
         if (($index instanceof Index) && \in_array('detail', $this->getAllowedActions(), true)) {
@@ -270,7 +270,7 @@ class CalendarController extends AbstractController
      */
     public function pastAction(
         int $limit = 100,
-        string $sort = 'ASC'
+        string $sort = 'ASC',
     ): ResponseInterface {
         if ($this->request->hasArgument('format')) {
             if ('html' != $this->request->getArgument('format')) {
@@ -279,7 +279,7 @@ class CalendarController extends AbstractController
         }
         $this->addCacheTags(['calendarize_past']);
 
-        $limit = (int)$this->settings['limit'] ?: $limit;
+        $limit = isset($this->settings['limit']) ? (int)$this->settings['limit'] : $limit;
         $sort = $this->settings['sorting'] ?: $sort;
         $this->checkStaticTemplateIsIncluded();
         $listStartTime = (string)$this->settings['listStartTime'];
@@ -497,7 +497,7 @@ class CalendarController extends AbstractController
         $indices = $this->indexRepository->findDay(
             (int)$date->format('Y'),
             (int)$date->format('n'),
-            (int)$date->format('j')
+            (int)$date->format('j'),
         );
 
         $this->eventExtendedAssignMultiple([
@@ -547,7 +547,7 @@ class CalendarController extends AbstractController
             ['calendarize_detail', 'calendarize_index_' . $index->getUid(), 'calendarize_'
                 . lcfirst($uniqueRegisterKey)
                 . '_'
-                . $originalObject->getUid(), ]
+                . $originalObject->getUid(), ],
         );
 
         // Meta tags
@@ -571,7 +571,7 @@ class CalendarController extends AbstractController
                 ;
                 $processedImage = $imageService->applyProcessingInstructions(
                     $images[0]->getOriginalResource(),
-                    $processingInstructions
+                    $processingInstructions,
                 );
                 $imageUrl = $this->getBaseUri() . $imageService->getImageUri($processedImage);
                 $metaTagManagerRegistry->getManagerForProperty('og:image')->addProperty('og:image', $imageUrl);
@@ -604,7 +604,7 @@ class CalendarController extends AbstractController
     public function searchAction(
         ?\DateTime $startDate = null,
         ?\DateTime $endDate = null,
-        array $customSearch = []
+        array $customSearch = [],
     ): ResponseInterface {
         $this->addCacheTags(['calendarize_search']);
 
@@ -676,11 +676,11 @@ class CalendarController extends AbstractController
         int $year = 0,
         int $month = 0,
         int $day = 0,
-        int $week = 0
+        int $week = 0,
     ): array {
         $searchMode = false;
         [$startDate, $endDate] = $this->checkWrongDateOrder($startDate, $endDate);
-        if ($startDate || $endDate || !empty($customSearch)) {
+        if ($startDate || $endDate || $this->hasCustomSearch($customSearch)) {
             $searchMode = true;
             $limit = (int)($this->settings['limit'] ?? 0);
             $indices = $this->indexRepository->findBySearch($startDate, $endDate, $customSearch, $limit);
@@ -725,7 +725,7 @@ class CalendarController extends AbstractController
                 (int)($this->settings['listStartTimeOffsetHours'] ?? 0),
                 $overrideStartDate,
                 $overrideEndDate,
-                (bool)($this->settings['ignoreStoragePid'] ?? false)
+                (bool)($this->settings['ignoreStoragePid'] ?? false),
             );
         }
 
@@ -746,6 +746,12 @@ class CalendarController extends AbstractController
         $this->eventDispatcher->dispatch($event);
 
         return $event->getVariables();
+    }
+
+    protected function hasCustomSearch(array $customSearch): bool
+    {
+        // Do not use !empty($customSearch) to avoid empty entries in the search form
+        return implode('', $customSearch) !== '';
     }
 
     protected function checkWrongDateOrder(?\DateTime $startDate = null, ?\DateTime &$endDate = null): array
@@ -784,7 +790,7 @@ class CalendarController extends AbstractController
                 'itemsPerPage' => $itemsPerPage,
                 'maximumNumberOfLinks' => $maximumNumberOfLinks,
                 'currentPage' => $currentPage,
-            ]
+            ],
         );
         $this->eventDispatcher->dispatch($event);
         $paginator = $event->getPaginator();
@@ -802,7 +808,7 @@ class CalendarController extends AbstractController
     protected function getAllowedActions(): array
     {
         $configuration = $this->configurationManager->getConfiguration(
-            ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK
+            ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK,
         );
         $allowedActions = [];
         foreach ($configuration['controllerConfiguration'] as $controllerName => $controllerActions) {

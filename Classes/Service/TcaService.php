@@ -67,7 +67,7 @@ class TcaService extends AbstractService
         $configurations = isset($fullRow['calendarize']) ? GeneralUtility::intExplode(
             ',',
             $fullRow['calendarize'],
-            true
+            true,
         ) : [];
 
         if (empty($configurations)) {
@@ -78,7 +78,7 @@ class TcaService extends AbstractService
             $paramsInternal = [
                 'row' => BackendUtility::getRecordWSOL(
                     'tx_calendarize_domain_model_configuration',
-                    $value
+                    $value,
                 ) ?? [],
                 'title' => '',
             ];
@@ -106,7 +106,7 @@ class TcaService extends AbstractService
     protected function getConfigurationGroupTitle(array $row): string
     {
         $title = '';
-        $groups = GeneralUtility::trimExplode(',', $row['groups'], true);
+        $groups = GeneralUtility::trimExplode(',', (string)$row['groups'], true);
         foreach ($groups as $key => $id) {
             $row = BackendUtility::getRecord('tx_calendarize_domain_model_configurationgroup', $id);
             if (!empty($row)) {
@@ -130,7 +130,7 @@ class TcaService extends AbstractService
             try {
                 $dateStart = BackendUtility::date((new \DateTime($row['start_date']))->getTimestamp());
                 $dateEnd = BackendUtility::date(
-                    (new \DateTime($row['end_date'] ?: $row['start_date']))->getTimestamp()
+                    (new \DateTime($row['end_date'] ?: $row['start_date']))->getTimestamp(),
                 );
                 $title .= $dateStart;
                 if ($dateStart !== $dateEnd) {

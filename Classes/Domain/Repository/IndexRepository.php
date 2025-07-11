@@ -10,6 +10,7 @@ use HDNET\Calendarize\Event\AddTimeFrameConstraintsEvent;
 use HDNET\Calendarize\Event\IndexRepositoryDefaultConstraintEvent;
 use HDNET\Calendarize\Event\IndexRepositoryFindBySearchEvent;
 use HDNET\Calendarize\Event\IndexRepositoryTimeSlotEvent;
+use HDNET\Calendarize\Event\ModifyDateTimeFrameConstraintEvent;
 use HDNET\Calendarize\Utility\ConfigurationUtility;
 use HDNET\Calendarize\Utility\DateTimeUtility;
 use HDNET\Calendarize\Utility\ExtensionConfigurationUtility;
@@ -79,7 +80,7 @@ class IndexRepository extends AbstractRepository
     public function findAllForBackend(
         OptionRequest $options,
         array $allowedPages = [],
-        bool $ignoreEnableFields = true
+        bool $ignoreEnableFields = true,
     ): array|QueryResultInterface {
         $query = $this->createQuery();
         $querySettings = $query->getQuerySettings();
@@ -88,13 +89,13 @@ class IndexRepository extends AbstractRepository
         $querySettings->setLanguageAspect(new LanguageAspect(
             $querySettings->getLanguageAspect()->getId(),
             $querySettings->getLanguageAspect()->getContentId(),
-            LanguageAspect::OVERLAYS_OFF
+            LanguageAspect::OVERLAYS_OFF,
         ));
 
         // Notice Selection without any language handling
         unset(
             $GLOBALS['TCA']['tx_calendarize_domain_model_index']['ctrl']['languageField'],
-            $GLOBALS['TCA']['tx_calendarize_domain_model_index']['ctrl']['transOrigPointerField']
+            $GLOBALS['TCA']['tx_calendarize_domain_model_index']['ctrl']['transOrigPointerField'],
         );
 
         if ('asc' === $options->getDirection()) {
@@ -127,7 +128,7 @@ class IndexRepository extends AbstractRepository
             $constraints,
             $query,
             $options->getStartDate(),
-            $options->getEndDate()
+            $options->getEndDate(),
         );
 
         if ($constraints) {
@@ -146,7 +147,7 @@ class IndexRepository extends AbstractRepository
         int $startOffsetHours = 0,
         int $overrideStartDate = 0,
         int $overrideEndDate = 0,
-        bool $ignoreStoragePid = false
+        bool $ignoreStoragePid = false,
     ): array|QueryResultInterface {
         $startTime = DateTimeUtility::getNow();
         $endTime = null;
@@ -187,14 +188,14 @@ class IndexRepository extends AbstractRepository
         ?\DateTimeInterface $startDate = null,
         ?\DateTimeInterface $endDate = null,
         array $customSearch = [],
-        int $limit = 0
+        int $limit = 0,
     ): array|QueryResultInterface {
         $event = $this->eventDispatcher->dispatch(new IndexRepositoryFindBySearchEvent(
             $startDate,
             $endDate,
             $customSearch,
             $this->indexTypes,
-            false
+            false,
         ));
 
         $query = $this->createQuery();
@@ -208,7 +209,7 @@ class IndexRepository extends AbstractRepository
             $constraints,
             $query,
             $event->getStartDate(),
-            $event->getEndDate()
+            $event->getEndDate(),
         );
 
         if ($event->getForeignIds()) {
@@ -270,7 +271,7 @@ class IndexRepository extends AbstractRepository
         bool $past = false,
         int $limit = 100,
         string $sort = QueryInterface::ORDER_ASCENDING,
-        bool $useIndexTime = false
+        bool $useIndexTime = false,
     ): array|QueryResultInterface {
         if (!$future && !$past) {
             return [];
@@ -309,7 +310,7 @@ class IndexRepository extends AbstractRepository
         bool $past = false,
         int $limit = 100,
         string $sort = QueryInterface::ORDER_ASCENDING,
-        ?\DateTimeImmutable $referenceDate = null
+        ?\DateTimeImmutable $referenceDate = null,
     ): array|QueryResultInterface {
         if (!$future && !$past) {
             return [];
@@ -348,7 +349,7 @@ class IndexRepository extends AbstractRepository
         bool $future = true,
         bool $past = false,
         int $limit = 100,
-        string $sort = QueryInterface::ORDER_ASCENDING
+        string $sort = QueryInterface::ORDER_ASCENDING,
     ): array|QueryResultInterface {
         if (!$future && !$past) {
             return [];
@@ -364,7 +365,7 @@ class IndexRepository extends AbstractRepository
             $future,
             $past,
             $limit,
-            $sort
+            $sort,
         );
     }
 
@@ -408,7 +409,7 @@ class IndexRepository extends AbstractRepository
     public function findWeek(int $year, int $week, int $weekStart = 1): array|QueryResultInterface
     {
         $startTime = \DateTimeImmutable::createFromMutable(
-            DateTimeUtility::convertWeekYear2DayMonthYear($week, $year, $weekStart)
+            DateTimeUtility::convertWeekYear2DayMonthYear($week, $year, $weekStart),
         );
         $endTime = $startTime->modify('+1 week -1 second');
 
@@ -455,14 +456,14 @@ class IndexRepository extends AbstractRepository
      */
     public function findByTimeSlot(
         ?\DateTimeInterface $startTime,
-        ?\DateTimeInterface $endTime = null
+        ?\DateTimeInterface $endTime = null,
     ): array|QueryResultInterface {
         $query = $this->createQuery();
         $constraints = $this->getDefaultConstraints($query);
         $this->addTimeFrameConstraints($constraints, $query, $startTime, $endTime);
 
         $event = $this->eventDispatcher->dispatch(
-            new IndexRepositoryTimeSlotEvent($constraints, $query)
+            new IndexRepositoryTimeSlotEvent($constraints, $query),
         );
 
         return $this->matchAndExecute($query, $event->getConstraints());
@@ -477,7 +478,7 @@ class IndexRepository extends AbstractRepository
             $event,
             true,
             true,
-            0
+            0,
         );
     }
 
@@ -515,7 +516,7 @@ class IndexRepository extends AbstractRepository
         }
 
         $event = $this->eventDispatcher->dispatch(
-            new IndexRepositoryDefaultConstraintEvent([], $this->indexTypes, $this->additionalSlotArguments)
+            new IndexRepositoryDefaultConstraintEvent([], $this->indexTypes, $this->additionalSlotArguments),
         );
 
         if ($event->getForeignIds()) {
@@ -539,7 +540,7 @@ class IndexRepository extends AbstractRepository
         array &$constraints,
         QueryInterface $query,
         ?\DateTimeInterface $startTime = null,
-        ?\DateTimeInterface $endTime = null
+        ?\DateTimeInterface $endTime = null,
     ): void {
         /** @var AddTimeFrameConstraintsEvent $event */
         $event = $this->eventDispatcher->dispatch(new AddTimeFrameConstraintsEvent(
@@ -547,7 +548,7 @@ class IndexRepository extends AbstractRepository
             $query,
             $this->additionalSlotArguments,
             $startTime,
-            $endTime
+            $endTime,
         ));
 
         $this->addDateTimeFrameConstraint(
@@ -555,7 +556,7 @@ class IndexRepository extends AbstractRepository
             $query,
             $event->getStart(),
             $event->getEnd(),
-            (bool)ConfigurationUtility::get('respectTimesInTimeFrameConstraints')
+            (bool)ConfigurationUtility::get('respectTimesInTimeFrameConstraints'),
         );
     }
 
@@ -577,7 +578,7 @@ class IndexRepository extends AbstractRepository
         QueryInterface $query,
         ?\DateTimeInterface $start,
         ?\DateTimeInterface $end,
-        bool $respectTime = false
+        bool $respectTime = false,
     ): void {
         if (null === $start && null === $end) {
             return;
@@ -634,7 +635,16 @@ class IndexRepository extends AbstractRepository
             }
         }
 
-        $constraints[] = $query->logicalAnd(...$dateConstraints);
+        /** @var ModifyDateTimeFrameConstraintEvent $event */
+        $event = $this->eventDispatcher->dispatch(new ModifyDateTimeFrameConstraintEvent(
+            $query,
+            $start,
+            $end,
+            $respectTime,
+            $dateConstraints,
+        ));
+
+        $constraints[] = $query->logicalAnd(...$event->getDateConstraints());
     }
 
     /**
@@ -671,7 +681,7 @@ class IndexRepository extends AbstractRepository
                 $foreignIdConstraints[] = $query->equals('foreignUid', $ids);
                 @trigger_error(
                     'Using only foreign ID constraint without a table is deprecated and will be removed in a later version.',
-                    \E_USER_DEPRECATED
+                    \E_USER_DEPRECATED,
                 );
             } elseif (\is_string($table) && \is_array($ids)) {
                 // Table based values with array of foreign uids
