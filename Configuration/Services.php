@@ -64,12 +64,4 @@ return function (ContainerConfigurator $configurator, ContainerBuilder $containe
             ]);
     }
 
-    if (ExtensionManagementUtility::isLoaded('workspaces')) {
-        $services->set('calendarize.event_listener.hide_indexes_in_workspace_module')
-            ->class(HideIndexesInWorkspaceModuleEventListener::class)
-            ->tag('event.listener', [
-                'identifier' => 'calendarize.event_listener.hide_indexes_in_workspace_module',
-                'event' => AfterCompiledCacheableDataForWorkspaceEvent::class,
-            ]);
-    }
 };
